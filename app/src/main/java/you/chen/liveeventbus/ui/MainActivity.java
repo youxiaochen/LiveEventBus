@@ -1,19 +1,25 @@
 package you.chen.liveeventbus.ui;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 
-import you.chen.liveeventbus.eventbus.LiveEventBus;
 import you.chen.liveeventbus.LogUtils;
 import you.chen.liveeventbus.R;
+import you.chen.liveeventbus.eventbus.LiveEventBus;
 
 public class MainActivity extends AppCompatActivity {
 
     int position;
 
     Observer<String> everObserver;
+
+    public static void lanuch(Context context) {
+        context.startActivity(new Intent(context, MainActivity.class));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
 
         everObserver = string->LogUtils.i(EventConstants.testEventForever +" main : " + string);
         LiveEventBus.with(EventConstants.testEventForever, String.class).observeForever(everObserver);
-
     }
 
     @Override
@@ -45,4 +50,5 @@ public class MainActivity extends AppCompatActivity {
         LiveEventBus.removeStickyEvent(EventConstants.testStickyEvent);
         LiveEventBus.removeStickyEvent(EventConstants.testStickyEventForever);
     }
+
 }

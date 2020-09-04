@@ -9,10 +9,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 
-import you.chen.liveeventbus.eventbus.LiveEventBus;
 import you.chen.liveeventbus.LogUtils;
 import you.chen.liveeventbus.R;
 import you.chen.liveeventbus.databinding.ActTest1Binding;
+import you.chen.liveeventbus.eventbus.LiveEventBus;
 
 public class Test1Activity extends AppCompatActivity {
 
@@ -50,11 +50,10 @@ public class Test1Activity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy() {//  1    2    3
         super.onDestroy();
         LiveEventBus.with(EventConstants.testEventForever, String.class).removeObserver(everObserver);
         LiveEventBus.withSticky(EventConstants.testStickyEventForever, String.class).removeObserver(stickyEverObserver);
-
         binding.unbind();
         binding = null;
     }

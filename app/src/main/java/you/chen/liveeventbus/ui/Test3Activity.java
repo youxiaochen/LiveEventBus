@@ -10,10 +10,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 
-import you.chen.liveeventbus.eventbus.LiveEventBus;
 import you.chen.liveeventbus.LogUtils;
 import you.chen.liveeventbus.R;
 import you.chen.liveeventbus.databinding.ActTest3Binding;
+import you.chen.liveeventbus.eventbus.LiveEventBus;
 
 public class Test3Activity extends AppCompatActivity implements View.OnClickListener {
 

@@ -9,7 +9,17 @@ import java.lang.reflect.Method;
 
 import static androidx.lifecycle.Lifecycle.State.DESTROYED;
 
+/**
+ *  create by you 2019-03
+ *  普通事件
+ * @param <T>
+ */
 public class LiveDataEvent<T> extends LiveData<T> {
+    /**
+     * 接收事件的级别, 默认为CREATED, 也可以设置 STARTED, RESUMED
+     */
+    @NonNull
+    Lifecycle.State activeLevel;
 
     final String key;
 
@@ -18,8 +28,13 @@ public class LiveDataEvent<T> extends LiveData<T> {
     final SafeIterableMap<Observer, ObserverWrapper<? super T>> everObserverMap = new SafeIterableMap<>();
 
     public LiveDataEvent(String key, LiveDataEventHandler eventHandler) {
+        this(key, eventHandler, Lifecycle.State.CREATED);
+    }
+
+    public LiveDataEvent(String key, LiveDataEventHandler eventHandler, @NonNull Lifecycle.State activeLevel) {
         this.key = key;
         this.eventHandler = eventHandler;
+        this.activeLevel = activeLevel;
     }
 
     @Override
@@ -29,7 +44,12 @@ public class LiveDataEvent<T> extends LiveData<T> {
         }
         try {
             ObserverWrapper<? super T> observer = new ObserverWrapper<>(o, getVersion() > START_VERSION);
-            LifecycleBoundObserver wrapper = new EventLifecycleBoundObserver(owner, observer, eventHandler.activeLevel());
+            LifecycleBoundObserver wrapper = new LifecycleBoundObserver(owner, observer) {
+                @Override
+                boolean shouldBeActive() {
+                    return mOwner.getLifecycle().getCurrentState().isAtLeast(activeLevel);
+                }
+            };
             LifecycleBoundObserver existing = (LifecycleBoundObserver) observersMapPut(observer, wrapper);
             if (existing != null && !existing.isAttachedTo(owner)) {
                 throw new IllegalArgumentException("Cannot add the same observer" + " with different lifecycles");
@@ -69,6 +89,10 @@ public class LiveDataEvent<T> extends LiveData<T> {
         super.setValue(value);
     }
 
+    public final void setActiveLevel(@NonNull Lifecycle.State activeLevel) {
+        this.activeLevel = activeLevel;
+    }
+
     /**
      * google工程师封装的太严实
      * @param observer
@@ -83,22 +107,6 @@ public class LiveDataEvent<T> extends LiveData<T> {
         Method putIfAbsent = classOfSafeIterableMap.getDeclaredMethod("putIfAbsent", Object.class, Object.class);
         putIfAbsent.setAccessible(true);
         return putIfAbsent.invoke(mObservers, observer, wrapper);
-    }
-
-    private class EventLifecycleBoundObserver extends LifecycleBoundObserver {
-
-        Lifecycle.State activeLevel;
-
-        EventLifecycleBoundObserver(@NonNull LifecycleOwner owner, Observer<? super T> observer, Lifecycle.State activeLevel) {
-            super(owner, observer);
-            this.activeLevel = activeLevel;
-        }
-
-        @Override
-        boolean shouldBeActive() {
-            return mOwner.getLifecycle().getCurrentState().isAtLeast(activeLevel);
-        }
-
     }
 
     private class ObserverWrapper<T> implements Observer<T> {
